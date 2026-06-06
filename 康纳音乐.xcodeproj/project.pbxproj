@@ -1,0 +1,294 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1B2C3D4E5F6000000000012 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000011 /* App.swift */; };
+		A1B2C3D4E5F6000000000014 /* ArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000013 /* ArtworkView.swift */; };
+		A1B2C3D4E5F6000000000016 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000015 /* AudioEngine.swift */; };
+		A1B2C3D4E5F6000000000018 /* AudioMetadataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000017 /* AudioMetadataWriter.swift */; };
+		A1B2C3D4E5F600000000001A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000019 /* ContentView.swift */; };
+		A1B2C3D4E5F600000000001C /* EditMetadataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000001B /* EditMetadataView.swift */; };
+		A1B2C3D4E5F600000000001E /* FolderMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000001D /* FolderMonitor.swift */; };
+		A1B2C3D4E5F6000000000020 /* MetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000001F /* MetadataStore.swift */; };
+		A1B2C3D4E5F6000000000022 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000021 /* Models.swift */; };
+		A1B2C3D4E5F6000000000024 /* NowPlayingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */; };
+		A1B2C3D4E5F6000000000026 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */; };
+		A1B2C3D4E5F6000000000028 /* TrackListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000027 /* TrackListView.swift */; };
+		A1B2C3D4E5F600000000002B /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000029 /* AppIcon.icns */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1B2C3D4E5F6000000000011 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000013 /* ArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000015 /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000017 /* AudioMetadataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMetadataWriter.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000019 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000001B /* EditMetadataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMetadataView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000001D /* FolderMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderMonitor.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000001F /* MetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000021 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingBar.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000027 /* TrackListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackListView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000029 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000002A /* XcodeInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = XcodeInfo.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000003 /* 康纳音乐.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "康纳音乐.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1B2C3D4E5F600000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1B2C3D4E5F6000000000004 = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6000000000005 /* Sources */,
+				A1B2C3D4E5F6000000000006 /* Resources */,
+				A1B2C3D4E5F6000000000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6000000000005 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6000000000011 /* App.swift */,
+				A1B2C3D4E5F6000000000013 /* ArtworkView.swift */,
+				A1B2C3D4E5F6000000000015 /* AudioEngine.swift */,
+				A1B2C3D4E5F6000000000017 /* AudioMetadataWriter.swift */,
+				A1B2C3D4E5F6000000000019 /* ContentView.swift */,
+				A1B2C3D4E5F600000000001B /* EditMetadataView.swift */,
+				A1B2C3D4E5F600000000001D /* FolderMonitor.swift */,
+				A1B2C3D4E5F600000000001F /* MetadataStore.swift */,
+				A1B2C3D4E5F6000000000021 /* Models.swift */,
+				A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */,
+				A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */,
+				A1B2C3D4E5F6000000000027 /* TrackListView.swift */,
+			);
+			path = Sources/MusicPlayer;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6000000000006 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6000000000029 /* AppIcon.icns */,
+				A1B2C3D4E5F600000000002A /* XcodeInfo.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6000000000003 /* 康纳音乐.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1B2C3D4E5F6000000000002 /* 康纳音乐 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F6000000000010 /* Build configuration list for PBXNativeTarget "康纳音乐" */;
+			buildPhases = (
+				A1B2C3D4E5F6000000000008 /* Sources */,
+				A1B2C3D4E5F600000000000A /* Frameworks */,
+				A1B2C3D4E5F6000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "康纳音乐";
+			productName = "康纳音乐";
+			productReference = A1B2C3D4E5F6000000000003 /* 康纳音乐.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1B2C3D4E5F6000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2605;
+				LastUpgradeCheck = 2605;
+				TargetAttributes = {
+					A1B2C3D4E5F6000000000002 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+				};
+			};
+			buildConfigurationList = A1B2C3D4E5F600000000000F /* Build configuration list for PBXProject "康纳音乐" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1B2C3D4E5F6000000000004;
+			productRefGroup = A1B2C3D4E5F6000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1B2C3D4E5F6000000000002 /* 康纳音乐 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1B2C3D4E5F6000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F600000000002B /* AppIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1B2C3D4E5F6000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6000000000012 /* App.swift in Sources */,
+				A1B2C3D4E5F6000000000014 /* ArtworkView.swift in Sources */,
+				A1B2C3D4E5F6000000000016 /* AudioEngine.swift in Sources */,
+				A1B2C3D4E5F6000000000018 /* AudioMetadataWriter.swift in Sources */,
+				A1B2C3D4E5F600000000001A /* ContentView.swift in Sources */,
+				A1B2C3D4E5F600000000001C /* EditMetadataView.swift in Sources */,
+				A1B2C3D4E5F600000000001E /* FolderMonitor.swift in Sources */,
+				A1B2C3D4E5F6000000000020 /* MetadataStore.swift in Sources */,
+				A1B2C3D4E5F6000000000022 /* Models.swift in Sources */,
+				A1B2C3D4E5F6000000000024 /* NowPlayingBar.swift in Sources */,
+				A1B2C3D4E5F6000000000026 /* PlayerViewModel.swift in Sources */,
+				A1B2C3D4E5F6000000000028 /* TrackListView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1B2C3D4E5F600000000000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F600000000000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		A1B2C3D4E5F600000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/XcodeInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shiwens.kangna-music;
+				PRODUCT_NAME = "康纳音乐";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F600000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/XcodeInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shiwens.kangna-music;
+				PRODUCT_NAME = "康纳音乐";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1B2C3D4E5F600000000000F /* Build configuration list for PBXProject "康纳音乐" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F600000000000B /* Debug */,
+				A1B2C3D4E5F600000000000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F6000000000010 /* Build configuration list for PBXNativeTarget "康纳音乐" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F600000000000D /* Debug */,
+				A1B2C3D4E5F600000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1B2C3D4E5F6000000000001 /* Project object */;
+}
