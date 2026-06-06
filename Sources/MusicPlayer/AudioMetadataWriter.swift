@@ -64,7 +64,6 @@ enum AudioMetadataWriter {
         output.append(tagBody)
         output.append(audioData)
         
-        try backupOriginal(at: url)
         try output.write(to: url, options: [.atomic])
     }
     
@@ -132,7 +131,6 @@ enum AudioMetadataWriter {
         }
         
         do {
-            try backupOriginal(at: url)
             _ = try FileManager.default.replaceItemAt(url, withItemAt: tempURL, backupItemName: nil, options: [])
         } catch {
             try? FileManager.default.removeItem(at: tempURL)
@@ -153,17 +151,6 @@ enum AudioMetadataWriter {
         case "mp4": return .mp4
         default: return .m4a
         }
-    }
-    
-    // MARK: - Backup
-    
-    private static func backupOriginal(at url: URL) throws {
-        let backupURL = url.appendingPathExtension("bak")
-        let fm = FileManager.default
-        if fm.fileExists(atPath: backupURL.path) {
-            try fm.removeItem(at: backupURL)
-        }
-        try fm.copyItem(at: url, to: backupURL)
     }
 }
 
