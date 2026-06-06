@@ -32,6 +32,8 @@ struct MusicPlayerApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private lazy var runtimeIcon: NSImage = makeRuntimeApplicationIcon()
+    
     func applicationWillFinishLaunching(_ notification: Notification) {
         applyApplicationIcon()
     }
@@ -48,49 +50,97 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.setActivationPolicy(.regular)
         applyApplicationIcon()
         NSApplication.shared.activate(ignoringOtherApps: true)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.applyApplicationIcon()
+        scheduleIconRefreshes()
+    }
+    
+    func applicationWillBecomeActive(_ notification: Notification) {
+        applyApplicationIcon()
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        applyApplicationIcon()
+        scheduleIconRefreshes()
+    }
+    
+    private func scheduleIconRefreshes() {
+        for delay in [0.1, 0.3, 0.8, 1.5] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.applyApplicationIcon()
+            }
         }
     }
     
     private func applyApplicationIcon() {
-        guard let icon = loadApplicationIcon() else { return }
-        icon.size = NSSize(width: 512, height: 512)
-        NSApplication.shared.applicationIconImage = icon
+        runtimeIcon.isTemplate = false
+        runtimeIcon.size = NSSize(width: 512, height: 512)
+        NSApplication.shared.applicationIconImage = runtimeIcon
+        NSApplication.shared.windows.forEach { window in
+            window.miniwindowImage = runtimeIcon
+        }
     }
     
-    private func loadApplicationIcon() -> NSImage? {
-        // 1. Runtime imageset lookup. A regular imageset is more reliable for
-        // NSImage(named:) than the special AppIcon.appiconset.
-        if let icon = NSImage(named: "AppRuntimeIcon") {
-            return icon
-        }
+    private func makeRuntimeApplicationIcon() -> NSImage {
+        let size = NSSize(width: 512, height: 512)
+        let image = NSImage(size: size)
+        image.lockFocus()
+        defer { image.unlockFocus() }
         
-        // 2. Standard app-bundle resource path used by the Xcode .app target.
-        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
-           let icon = NSImage(contentsOf: iconURL) {
-            return icon
-        }
+        let rect = NSRect(origin: .zero, size: size)
+        NSColor.clear.setFill()
+        rect.fill()
         
-        // 3. Asset catalog app-icon lookup. This may work for the bundled app target.
-        if let icon = NSImage(named: "AppIcon") {
-            return icon
-        }
+        // Solid modern blue-violet rounded-square background.
+        let backgroundRect = NSRect(x: 48, y: 48, width: 416, height: 416)
+        let background = NSBezierPath(roundedRect: backgroundRect, xRadius: 92, yRadius: 92)
+        NSColor(red: 58 / 255, green: 89 / 255, blue: 255 / 255, alpha: 1).setFill()
+        background.fill()
         
-        // 4. SwiftPM/Xcode package debug fallback: when launched as a bare
-        // executable, Bundle.main has no app resources, so search upward from
-        // the working directory for the checked-in Resources/AppIcon.icns.
-        var directory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        for _ in 0..<8 {
-            let candidate = directory.appendingPathComponent("Resources/AppIcon.icns")
-            if let icon = NSImage(contentsOf: candidate) {
-                return icon
-            }
-            directory.deleteLastPathComponent()
-        }
+        // Subtle symbol shadow.
+        drawRuntimeMusicNote(offset: NSPoint(x: 8, y: -8), color: NSColor.black.withAlphaComponent(0.20))
         
-        return nil
+        // Large rounded white music note. Programmatic drawing guarantees the
+        // Dock icon is visible even if Xcode/LaunchServices ignores bundle icons.
+        drawRuntimeMusicNote(offset: .zero, color: .white)
+        
+        image.isTemplate = false
+        return image
+    }
+    
+    private func drawRuntimeMusicNote(offset: NSPoint, color: NSColor) {
+        color.setFill()
+        color.setStroke()
+        
+        let ox = offset.x
+        let oy = offset.y
+        
+        // Rounded note head.
+        let noteHead = NSBezierPath(ovalIn: NSRect(x: 154 + ox, y: 126 + oy, width: 136, height: 104))
+        noteHead.fill()
+        
+        // Small inner cut keeps the note refined while staying very legible.
+        NSColor(red: 58 / 255, green: 89 / 255, blue: 255 / 255, alpha: color.alphaComponent).setFill()
+        let innerCut = NSBezierPath(ovalIn: NSRect(x: 190 + ox, y: 152 + oy, width: 62, height: 48))
+        innerCut.fill()
+        
+        color.setFill()
+        color.setStroke()
+        
+        // Thick rounded stem.
+        let stem = NSBezierPath(roundedRect: NSRect(x: 270 + ox, y: 174 + oy, width: 44, height: 210), xRadius: 22, yRadius: 22)
+        stem.fill()
+        
+        // Rounded slanted beam.
+        let beam = NSBezierPath(roundedRect: NSRect(x: 268 + ox, y: 360 + oy, width: 144, height: 44), xRadius: 22, yRadius: 22)
+        var transform = AffineTransform()
+        transform.translate(x: 340 + ox, y: 382 + oy)
+        transform.rotate(byDegrees: -16)
+        transform.translate(x: -(340 + ox), y: -(382 + oy))
+        beam.transform(using: transform)
+        beam.fill()
+        
+        // Round end cap for a softer, more premium silhouette.
+        let cap = NSBezierPath(ovalIn: NSRect(x: 382 + ox, y: 338 + oy, width: 54, height: 54))
+        cap.fill()
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
