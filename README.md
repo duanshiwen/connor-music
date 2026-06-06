@@ -159,8 +159,3 @@ Resources/
 - Swift 6.0+（用于构建）
 - Xcode 26+（推荐用于标准 `.app` target 构建）
 
-## 仓库
-
-```text
-git@github.com:duanshiwen/connor-music.git
-```
