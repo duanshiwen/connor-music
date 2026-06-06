@@ -38,25 +38,33 @@ final class Track: Identifiable, ObservableObject, Equatable {
             loadedDuration = CMTimeGetSeconds(d)
         }
         
-        // Metadata
+        // AVFoundation's commonMetadata is not populated for every audio format.
+        // In particular, FLAC stores tags as Vorbis Comment metadata
+        // (format: org.xiph.vorbis-comment), so we read both commonMetadata and
+        // format-specific metadata and merge the first useful values we find.
         if let metadata = try? await asset.load(.commonMetadata) {
-            for item in metadata {
-                if let key = item.commonKey {
-                    switch key {
-                    case .commonKeyTitle:
-                        loadedTitle = try? await item.load(.stringValue)
-                    case .commonKeyArtist:
-                        loadedArtist = try? await item.load(.stringValue)
-                    case .commonKeyAlbumName:
-                        loadedAlbum = try? await item.load(.stringValue)
-                    case .commonKeyArtwork:
-                        if let data = try? await item.load(.dataValue) {
-                            loadedArtwork = NSImage(data: data)
-                        }
-                    default:
-                        break
-                    }
+            await applyMetadataItems(
+                metadata,
+                title: &loadedTitle,
+                artist: &loadedArtist,
+                album: &loadedAlbum,
+                artwork: &loadedArtwork
+            )
+        }
+        
+        if let formats = try? await asset.load(.availableMetadataFormats) {
+            for format in formats {
+                guard needsMoreMetadata(title: loadedTitle, artist: loadedArtist, album: loadedAlbum, artwork: loadedArtwork),
+                      let metadata = try? await asset.loadMetadata(for: format) else {
+                    continue
                 }
+                await applyMetadataItems(
+                    metadata,
+                    title: &loadedTitle,
+                    artist: &loadedArtist,
+                    album: &loadedAlbum,
+                    artwork: &loadedArtwork
+                )
             }
         }
         
@@ -75,6 +83,32 @@ final class Track: Identifiable, ObservableObject, Equatable {
             if let album = metadata.album { self.album = album }
             if let artwork = metadata.artwork { self.artwork = artwork }
         }
+    }
+    
+    private func applyMetadataItems(
+        _ items: [AVMetadataItem],
+        title: inout String?,
+        artist: inout String?,
+        album: inout String?,
+        artwork: inout NSImage?
+    ) async {
+        for item in items {
+            if title == nil, item.matchesCommonKey(.commonKeyTitle) || item.matchesRawKey("TITLE") {
+                title = await item.nonEmptyStringValue()
+            } else if artist == nil, item.matchesCommonKey(.commonKeyArtist) || item.matchesRawKey("ARTIST") {
+                artist = await item.nonEmptyStringValue()
+            } else if album == nil, item.matchesCommonKey(.commonKeyAlbumName) || item.matchesRawKey("ALBUM") {
+                album = await item.nonEmptyStringValue()
+            } else if artwork == nil, item.matchesCommonKey(.commonKeyArtwork) || item.matchesRawKey("METADATA_BLOCK_PICTURE") || item.matchesRawKey("COVERART") {
+                if let data = try? await item.load(.dataValue) {
+                    artwork = NSImage(data: data)
+                }
+            }
+        }
+    }
+    
+    private func needsMoreMetadata(title: String?, artist: String?, album: String?, artwork: NSImage?) -> Bool {
+        title == nil || artist == nil || album == nil || artwork == nil
     }
     
     func applyOverride(_ override: TrackMetadataOverride?) {
@@ -104,6 +138,23 @@ private struct TrackMetadata {
     let album: String?
     let duration: TimeInterval?
     let artwork: NSImage?
+}
+
+private extension AVMetadataItem {
+    func matchesCommonKey(_ expectedKey: AVMetadataKey) -> Bool {
+        commonKey == expectedKey
+    }
+    
+    func matchesRawKey(_ expectedKey: String) -> Bool {
+        guard let key else { return false }
+        return String(describing: key).caseInsensitiveCompare(expectedKey) == .orderedSame
+    }
+    
+    func nonEmptyStringValue() async -> String? {
+        guard let value = try? await load(.stringValue) else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
 }
 
 // MARK: - Playback State

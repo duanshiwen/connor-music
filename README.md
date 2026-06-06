@@ -2,7 +2,7 @@
 
 康纳音乐是一款本地 macOS 音乐播放器，使用 Swift + SwiftUI 原生实现。
 
-当前版本：**1.0.1**
+当前版本：**1.1.0**
 
 ## 功能
 
@@ -12,9 +12,10 @@
 - ↕️ 支持按「标题 / 艺术家 / 专辑 / 时长」列排序
 - ⏯️ 播放 / 暂停 / 上一曲 / 下一曲
 - 🔁 一个按钮循环切换播放模式：顺序播放 → 随机播放 → 全部循环 → 单曲循环
-- 🖼️ 自动读取专辑封面和音频元数据
+- 🖼️ 自动读取专辑封面和音频元数据，支持读取 FLAC / Vorbis Comment 标签
+- 🎯 当前播放曲目离开可视区域时，自动显示浮动定位按钮，一键滚动回当前曲目
 - ✏️ 支持在播放器内编辑歌曲标题、艺术家和专辑信息
-- 💾 元数据修改会直接写入原始音频文件，不创建 `.bak` 备份
+- 💾 元数据修改会直接写入原始音频文件，不创建 `.bak` 备份；支持 MP3、FLAC、M4A、MP4、AAC
 - 🔊 音量跟随系统，无独立音量控制
 - 🧩 使用标准 macOS 静态 App 图标资源，不使用运行时图标绘制代码
 
@@ -23,14 +24,13 @@
 当前发布包：
 
 ```text
-build/康纳音乐-1.0.1.dmg
+build/康纳音乐.app
 ```
 
 安装方式：
 
-1. 双击打开 `康纳音乐-1.0.1.dmg`
-2. 将 `康纳音乐.app` 拖入 `Applications`
-3. 从「应用程序」中启动康纳音乐
+1. 运行 `./build.sh` 生成 `build/康纳音乐.app`
+2. 双击 `build/康纳音乐.app` 启动，或将它拖入 `Applications`
 
 > 说明：当前本机没有可用的 Apple Developer ID 证书，因此发布包使用 ad-hoc 签名。它适合本地安装和测试；如果要公开分发给其他用户，仍建议使用 Developer ID 签名并完成 notarization 公证。
 
@@ -66,13 +66,13 @@ swift build -c release
 
 ## 打包发布
 
-当前 1.0.1 发布版使用 Xcode Release 构建，并打包成 DMG。
+当前 1.1.0 发布版使用 Xcode Release 构建。需要 DMG 时可按下面流程打包。
 
 典型流程：
 
 ```bash
 APP_NAME="康纳音乐"
-VERSION="1.0.1"
+VERSION="1.1.0"
 BUILD_DIR="build"
 DERIVED_DATA="$BUILD_DIR/DerivedData"
 DIST_DIR="$BUILD_DIR/release-$VERSION"
@@ -110,11 +110,13 @@ codesign --verify --verbose=2 "$DMG_PATH"
 hdiutil verify "$DMG_PATH"
 ```
 
-1.0.1 DMG 校验和：
+1.1.0 更新重点：
 
-```text
-SHA-256: 51b1aab8446bac1e4305c8fc39034eb93561953e5f41566a4ae8bd608dcb705f
-```
+- 修复 FLAC 曲目因 `commonMetadata` 为空而显示“未知艺术家 / 未知专辑”的问题
+- 新增 FLAC 元数据写入支持，编辑标题、艺术家、专辑时不转码、不损失音质
+- 新增当前播放曲目浮动定位按钮，仅在当前曲目不在播放列表可视区域内时显示
+- 修复定位当前曲目后某一行残留系统选中高亮的问题
+
 
 ## 使用
 

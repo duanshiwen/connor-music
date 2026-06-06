@@ -9,10 +9,11 @@ enum PlaylistSortField: Equatable {
 
 struct TrackListView: View {
     @ObservedObject var viewModel: PlayerViewModel
-    @State private var selectedTrackID: Track.ID? = nil
+    @State private var lastInteractedTrackID: Track.ID? = nil
     @State private var sortField: PlaylistSortField = .title
     @State private var sortAscending: Bool = true
-    
+    @State private var visibleTrackFrames: [Track.ID: CGRect] = [:]
+
     private var visibleRows: [TrackRowData] {
         let currentTrackID = viewModel.currentTrack?.id
         return viewModel.filteredPlaylist.enumerated().map { index, track in
@@ -23,38 +24,58 @@ struct TrackListView: View {
             )
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             header
-            List(selection: $selectedTrackID) {
-                ForEach(visibleRows) { row in
-                    TrackRowView(
-                        track: row.track,
-                        index: row.index,
-                        isCurrent: row.isCurrent,
-                        playbackState: viewModel.playbackState
-                    )
-                    .tag(row.track.id)
-                    .contentShape(Rectangle())
-                    .contextMenu {
-                        contextMenu(for: row.track)
+            GeometryReader { listGeometry in
+                ScrollViewReader { scrollProxy in
+                    ZStack(alignment: .bottomTrailing) {
+                        List {
+                            ForEach(visibleRows) { row in
+                                TrackRowView(
+                                    track: row.track,
+                                    index: row.index,
+                                    isCurrent: row.isCurrent,
+                                    playbackState: viewModel.playbackState
+                                )
+                                .id(row.track.id)
+                                .contentShape(Rectangle())
+                                .background(trackVisibilityReporter(for: row.track.id))
+                                .contextMenu {
+                                    contextMenu(for: row.track)
+                                }
+                                .onTapGesture(count: 2) {
+                                    lastInteractedTrackID = row.track.id
+                                    viewModel.play(track: row.track)
+                                }
+                            }
+                        }
+                        .coordinateSpace(name: TrackListCoordinateSpace.name)
+                        .listStyle(.inset(alternatesRowBackgrounds: true))
+                        .onPreferenceChange(TrackFramePreferenceKey.self) { frames in
+                            visibleTrackFrames = frames
+                        }
+
+                        if shouldShowLocateCurrentButton(in: listGeometry.size) {
+                            locateCurrentTrackButton(scrollProxy: scrollProxy)
+                                .padding(.trailing, 18)
+                                .padding(.bottom, 18)
+                                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                        }
                     }
-                    .onTapGesture(count: 2) {
-                        viewModel.play(track: row.track)
-                    }
+                    .animation(.easeInOut(duration: 0.18), value: shouldShowLocateCurrentButton(in: listGeometry.size))
                 }
             }
-            .listStyle(.inset(alternatesRowBackgrounds: true))
         }
         .onDeleteCommand {
-            if let id = selectedTrackID,
+            if let id = lastInteractedTrackID,
                let track = viewModel.playlist.first(where: { $0.id == id }) {
                 viewModel.removeTrack(track)
             }
         }
     }
-    
+
     private var header: some View {
         HStack(spacing: 8) {
             Text(" ")
@@ -103,7 +124,7 @@ struct TrackListView: View {
             Divider()
         }
     }
-    
+
     @ViewBuilder
     private func contextMenu(for track: Track) -> some View {
         Button("播放") {
@@ -117,7 +138,7 @@ struct TrackListView: View {
             viewModel.removeTrack(track)
         }
     }
-    
+
     private func sort(_ field: PlaylistSortField) {
         if sortField == field {
             sortAscending.toggle()
@@ -127,6 +148,63 @@ struct TrackListView: View {
         }
         viewModel.sortPlaylist(by: field, ascending: sortAscending)
     }
+
+    private func trackVisibilityReporter(for trackID: Track.ID) -> some View {
+        GeometryReader { proxy in
+            Color.clear.preference(
+                key: TrackFramePreferenceKey.self,
+                value: [trackID: proxy.frame(in: .named(TrackListCoordinateSpace.name))]
+            )
+        }
+    }
+
+    private func shouldShowLocateCurrentButton(in listSize: CGSize) -> Bool {
+        guard let currentTrackID = viewModel.currentTrack?.id,
+              visibleRows.contains(where: { $0.id == currentTrackID }) else {
+            return false
+        }
+
+        guard let frame = visibleTrackFrames[currentTrackID] else {
+            // SwiftUI List virtualizes rows. If the current track is in the
+            // filtered playlist but has no reported frame, it is offscreen.
+            return true
+        }
+
+        let visibleBounds = CGRect(origin: .zero, size: listSize)
+        return !visibleBounds.intersects(frame)
+    }
+
+    private func locateCurrentTrackButton(scrollProxy: ScrollViewProxy) -> some View {
+        Button {
+            guard let currentTrackID = viewModel.currentTrack?.id else { return }
+            lastInteractedTrackID = currentTrackID
+            withAnimation(.easeInOut(duration: 0.25)) {
+                scrollProxy.scrollTo(currentTrackID, anchor: .center)
+            }
+        } label: {
+            Label("定位当前", systemImage: "scope")
+                .labelStyle(.iconOnly)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 34, height: 34)
+                .background(.tint, in: Circle())
+                .shadow(color: .black.opacity(0.22), radius: 8, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+        .help("定位到当前播放曲目")
+    }
+}
+
+private enum TrackListCoordinateSpace {
+    static let name = "TrackListCoordinateSpace"
+}
+
+private struct TrackFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [Track.ID: CGRect] = [:]
+
+    static func reduce(value: inout [Track.ID: CGRect], nextValue: () -> [Track.ID: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
 }
 
 private struct SortHeaderButton: View {
@@ -135,9 +213,9 @@ private struct SortHeaderButton: View {
     let activeField: PlaylistSortField
     let ascending: Bool
     let action: (PlaylistSortField) -> Void
-    
+
     private var isActive: Bool { field == activeField }
-    
+
     var body: some View {
         Button {
             action(field)
@@ -163,7 +241,7 @@ private struct TrackRowData: Identifiable {
     let track: Track
     let index: Int
     let isCurrent: Bool
-    
+
     var id: Track.ID { track.id }
 }
 
@@ -172,17 +250,17 @@ private struct TrackRowView: View {
     let index: Int
     let isCurrent: Bool
     let playbackState: PlaybackState
-    
+
     var body: some View {
         HStack(spacing: 8) {
             currentTrackIndicator
                 .frame(width: 24)
-            
+
             Text("\(index + 1)")
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(.secondary)
                 .frame(width: 34, alignment: .leading)
-            
+
             HStack(spacing: 8) {
                 ArtworkView(artwork: track.artwork, size: 34)
                 Text(track.title)
@@ -191,19 +269,19 @@ private struct TrackRowView: View {
                     .foregroundColor(isCurrent ? .accentColor : .primary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             Text(track.artist)
                 .font(.system(size: 12))
                 .lineLimit(1)
                 .foregroundColor(.secondary)
                 .frame(width: 150, alignment: .leading)
-            
+
             Text(track.album)
                 .font(.system(size: 12))
                 .lineLimit(1)
                 .foregroundColor(.secondary)
                 .frame(width: 150, alignment: .leading)
-            
+
             Text(track.formattedDuration)
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(.secondary)
@@ -211,7 +289,7 @@ private struct TrackRowView: View {
         }
         .padding(.vertical, 4)
     }
-    
+
     @ViewBuilder
     private var currentTrackIndicator: some View {
         if isCurrent {
