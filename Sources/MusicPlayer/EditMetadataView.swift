@@ -43,7 +43,7 @@ struct EditMetadataView: View {
             }
             
             HStack {
-                Text("修改会保存到本播放器，不会改写原始音频文件。")
+                Text("修改会写入原始音频文件，并自动创建 .bak 备份。")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                 Spacer()

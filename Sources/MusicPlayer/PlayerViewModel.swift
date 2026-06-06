@@ -252,12 +252,13 @@ final class PlayerViewModel: ObservableObject {
             album: normalizedMetadataValue(album) ?? "未知专辑"
         )
         let wasCurrentTrack = currentTrack?.id == track.id
+        let resumeTime = wasCurrentTrack ? currentTime : 0
+        let shouldResumePlayback = wasCurrentTrack && playbackState == .playing
         
         if wasCurrentTrack {
             audioEngine.stop()
-            playbackState = .idle
+            playbackState = .paused
             stopTimeUpdate()
-            currentTime = 0
         }
         
         Task {
@@ -266,10 +267,46 @@ final class PlayerViewModel: ObservableObject {
                 track.title = metadata.title
                 track.artist = metadata.artist
                 track.album = metadata.album
+                
+                if wasCurrentTrack {
+                    try audioEngine.load(url: track.url)
+                    let safeResumeTime = max(0, min(resumeTime, audioEngine.duration))
+                    audioEngine.currentTime = safeResumeTime
+                    currentTime = safeResumeTime
+                    
+                    if shouldResumePlayback {
+                        audioEngine.play()
+                        playbackState = .playing
+                        startTimeUpdate()
+                    } else {
+                        playbackState = .paused
+                    }
+                }
+                
                 editingTrack = nil
                 metadataEditError = nil
             } catch {
                 metadataEditError = "保存歌曲信息失败：\(error.localizedDescription)"
+                
+                if wasCurrentTrack {
+                    do {
+                        try audioEngine.load(url: track.url)
+                        let safeResumeTime = max(0, min(resumeTime, audioEngine.duration))
+                        audioEngine.currentTime = safeResumeTime
+                        currentTime = safeResumeTime
+                        
+                        if shouldResumePlayback {
+                            audioEngine.play()
+                            playbackState = .playing
+                            startTimeUpdate()
+                        } else {
+                            playbackState = .paused
+                        }
+                    } catch {
+                        playbackState = .idle
+                        currentTime = 0
+                    }
+                }
             }
         }
     }
