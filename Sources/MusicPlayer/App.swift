@@ -38,6 +38,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // The Xcode app target has a bundle identifier, but disabling automatic
         // tabbing also keeps launches consistent across both run paths.
         NSWindow.allowsAutomaticWindowTabbing = false
+        
+        // Be explicit when launched from Xcode's debugger so the app becomes a
+        // regular foreground app and the main SwiftUI window is activated.
+        NSApplication.shared.setActivationPolicy(.regular)
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
