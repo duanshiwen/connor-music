@@ -101,21 +101,15 @@ struct NowPlayingBar: View {
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
                     
-                    // Shuffle
-                    Button(action: { viewModel.shuffleEnabled.toggle() }) {
-                        Image(systemName: "shuffle")
+                    // Playback mode
+                    Button(action: { viewModel.cyclePlaybackMode() }) {
+                        Image(systemName: viewModel.playbackModeIcon)
                             .font(.system(size: 14))
-                            .foregroundColor(viewModel.shuffleEnabled ? .accentColor : .secondary.opacity(0.6))
+                            .foregroundColor(viewModel.isSpecialPlaybackModeEnabled ? .accentColor : .secondary.opacity(0.6))
+                            .frame(width: 18)
                     }
                     .buttonStyle(.plain)
-                    
-                    // Repeat
-                    Button(action: { viewModel.cycleRepeatMode() }) {
-                        Image(systemName: viewModel.repeatMode.icon)
-                            .font(.system(size: 14))
-                            .foregroundColor(viewModel.repeatMode == .off ? .secondary.opacity(0.6) : .accentColor)
-                    }
-                    .buttonStyle(.plain)
+                    .help("播放模式：\(viewModel.playbackModeTitle)")
                 }
                 .frame(width: 200, alignment: .trailing)
             }

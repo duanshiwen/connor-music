@@ -209,6 +209,37 @@ final class PlayerViewModel: ObservableObject {
         }
     }
     
+    func cyclePlaybackMode() {
+        if shuffleEnabled {
+            shuffleEnabled = false
+            repeatMode = .all
+            return
+        }
+        
+        switch repeatMode {
+        case .off:
+            shuffleEnabled = true
+        case .all:
+            repeatMode = .one
+        case .one:
+            repeatMode = .off
+        }
+    }
+    
+    var playbackModeTitle: String {
+        if shuffleEnabled { return "随机播放" }
+        return repeatMode.rawValue
+    }
+    
+    var playbackModeIcon: String {
+        if shuffleEnabled { return "shuffle" }
+        return repeatMode.icon
+    }
+    
+    var isSpecialPlaybackModeEnabled: Bool {
+        shuffleEnabled || repeatMode != .off
+    }
+    
     func editMetadata(for track: Track) {
         metadataEditError = nil
         editingTrack = track
