@@ -5,6 +5,8 @@ struct TrackListView: View {
     @ObservedObject var viewModel: PlayerViewModel
     @State private var selectedTrackID: Track.ID? = nil
     @State private var draggingTrackID: Track.ID? = nil
+    @State private var dragStartOrder: [Track.ID] = []
+    @State private var isDropInsideList: Bool = false
     
     private var isFiltering: Bool {
         !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -24,41 +26,62 @@ struct TrackListView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            List(selection: $selectedTrackID) {
-                ForEach(visibleRows) { row in
-                    TrackRowView(
-                        track: row.track,
-                        index: row.index,
-                        isCurrent: row.isCurrent,
-                        playbackState: viewModel.playbackState,
-                        canReorder: !isFiltering,
-                        isDragging: draggingTrackID == row.track.id,
-                        onBeginDrag: {
-                            draggingTrackID = row.track.id
-                        }
-                    )
-                    .tag(row.track.id)
-                    .contentShape(Rectangle())
-                    .contextMenu {
-                        contextMenu(for: row.track)
-                    }
-                    .onTapGesture(count: 2) {
-                        viewModel.play(track: row.track)
-                    }
-                    .onDrop(
-                        of: [.text],
-                        delegate: TrackReorderDropDelegate(
-                            targetTrackID: row.track.id,
-                            draggingTrackID: $draggingTrackID,
-                            isEnabled: !isFiltering,
-                            move: { movingID, targetID in
-                                viewModel.moveTrack(movingID, before: targetID)
+            GeometryReader { geometry in
+                List(selection: $selectedTrackID) {
+                    ForEach(visibleRows) { row in
+                        TrackRowView(
+                            track: row.track,
+                            index: row.index,
+                            isCurrent: row.isCurrent,
+                            playbackState: viewModel.playbackState,
+                            canReorder: !isFiltering,
+                            isDragging: draggingTrackID == row.track.id,
+                            dragPreviewWidth: max(280, geometry.size.width - 32),
+                            onBeginDrag: {
+                                beginDragging(row.track.id)
                             }
                         )
+                        .tag(row.track.id)
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            contextMenu(for: row.track)
+                        }
+                        .onTapGesture(count: 2) {
+                            viewModel.play(track: row.track)
+                        }
+                        .onDrop(
+                            of: [.text],
+                            delegate: TrackReorderDropDelegate(
+                                targetTrackID: row.track.id,
+                                draggingTrackID: $draggingTrackID,
+                                isDropInsideList: $isDropInsideList,
+                                isEnabled: !isFiltering,
+                                move: { movingID, targetID in
+                                    viewModel.moveTrack(movingID, before: targetID)
+                                }
+                            )
+                        )
+                    }
+                }
+                .listStyle(.inset(alternatesRowBackgrounds: true))
+                .contentShape(Rectangle())
+                .onDrop(
+                    of: [.text],
+                    delegate: PlaylistBoundsDropDelegate(
+                        draggingTrackID: $draggingTrackID,
+                        isDropInsideList: $isDropInsideList,
+                        isEnabled: !isFiltering,
+                        confirmDrop: finishDragging,
+                        cancelDrop: cancelDragging
                     )
+                )
+                .onChange(of: draggingTrackID) { _, newValue in
+                    if newValue == nil {
+                        dragStartOrder = []
+                        isDropInsideList = false
+                    }
                 }
             }
-            .listStyle(.inset(alternatesRowBackgrounds: true))
         }
         .onDeleteCommand {
             if let id = selectedTrackID,
@@ -110,6 +133,23 @@ struct TrackListView: View {
             viewModel.removeTrack(track)
         }
     }
+    
+    private func beginDragging(_ trackID: Track.ID) {
+        dragStartOrder = viewModel.playlist.map(\.id)
+        draggingTrackID = trackID
+        isDropInsideList = true
+    }
+    
+    private func finishDragging() {
+        draggingTrackID = nil
+    }
+    
+    private func cancelDragging() {
+        if !dragStartOrder.isEmpty {
+            viewModel.restorePlaylistOrder(dragStartOrder)
+        }
+        draggingTrackID = nil
+    }
 }
 
 private struct TrackRowData: Identifiable {
@@ -127,6 +167,7 @@ private struct TrackRowView: View {
     let playbackState: PlaybackState
     let canReorder: Bool
     let isDragging: Bool
+    let dragPreviewWidth: CGFloat
     let onBeginDrag: () -> Void
     
     var body: some View {
@@ -136,6 +177,8 @@ private struct TrackRowView: View {
                 playbackState: playbackState,
                 canReorder: canReorder,
                 track: track,
+                index: index,
+                previewWidth: dragPreviewWidth,
                 onBeginDrag: onBeginDrag
             )
             .frame(width: 24)
@@ -172,7 +215,7 @@ private struct TrackRowView: View {
                 .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 4)
-        .opacity(isDragging ? 0.38 : 1)
+        .opacity(isDragging ? 0.32 : 1)
         .animation(.easeOut(duration: 0.12), value: isDragging)
     }
 }
@@ -182,6 +225,8 @@ private struct DragHandleView: View {
     let playbackState: PlaybackState
     let canReorder: Bool
     @ObservedObject var track: Track
+    let index: Int
+    let previewWidth: CGFloat
     let onBeginDrag: () -> Void
     
     var body: some View {
@@ -204,48 +249,71 @@ private struct DragHandleView: View {
             onBeginDrag()
             return NSItemProvider(object: track.id.uuidString as NSString)
         } preview: {
-            TrackDragPreview(track: track)
+            TrackDragPreview(track: track, index: index, width: previewWidth)
         }
     }
 }
 
 private struct TrackDragPreview: View {
     @ObservedObject var track: Track
+    let index: Int
+    let width: CGFloat
     
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.secondary)
-            ArtworkView(artwork: track.artwork, size: 32)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(track.title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
-                Text(track.artist)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                .frame(width: 24)
+            
+            Text("\(index + 1)")
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(.secondary)
+                .frame(width: 34, alignment: .leading)
+            
+            HStack(spacing: 8) {
+                ArtworkView(artwork: track.artwork, size: 34)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(track.title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .lineLimit(1)
+                    Text(track.artist)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
             }
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Text(track.album)
+                .font(.system(size: 12))
+                .lineLimit(1)
+                .foregroundColor(.secondary)
+                .frame(width: 170, alignment: .leading)
+            
+            Text(track.formattedDuration)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(.secondary)
+                .frame(width: 60, alignment: .trailing)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .frame(width: 280, alignment: .leading)
+        .padding(.vertical, 7)
+        .frame(width: width, alignment: .leading)
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.accentColor.opacity(0.35), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.accentColor.opacity(0.36), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
-        .opacity(0.88)
+        .shadow(color: .black.opacity(0.16), radius: 10, x: 0, y: 5)
+        .opacity(0.86)
     }
 }
 
 private struct TrackReorderDropDelegate: DropDelegate {
     let targetTrackID: Track.ID
     @Binding var draggingTrackID: Track.ID?
+    @Binding var isDropInsideList: Bool
     let isEnabled: Bool
     let move: (Track.ID, Track.ID) -> Void
     
@@ -257,15 +325,53 @@ private struct TrackReorderDropDelegate: DropDelegate {
         guard isEnabled,
               let draggingTrackID,
               draggingTrackID != targetTrackID else { return }
+        isDropInsideList = true
         move(draggingTrackID, targetTrackID)
     }
     
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        isDropInsideList = isEnabled
+        return DropProposal(operation: isEnabled ? .move : .cancel)
+    }
+    
     func performDrop(info: DropInfo) -> Bool {
-        draggingTrackID = nil
+        isDropInsideList = isEnabled
         return isEnabled
+    }
+}
+
+private struct PlaylistBoundsDropDelegate: DropDelegate {
+    @Binding var draggingTrackID: Track.ID?
+    @Binding var isDropInsideList: Bool
+    let isEnabled: Bool
+    let confirmDrop: () -> Void
+    let cancelDrop: () -> Void
+    
+    func validateDrop(info: DropInfo) -> Bool {
+        isEnabled && draggingTrackID != nil
+    }
+    
+    func dropEntered(info: DropInfo) {
+        isDropInsideList = isEnabled
+    }
+    
+    func dropExited(info: DropInfo) {
+        guard draggingTrackID != nil else { return }
+        isDropInsideList = false
+        cancelDrop()
     }
     
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        DropProposal(operation: isEnabled ? .move : .cancel)
+        isDropInsideList = isEnabled
+        return DropProposal(operation: isEnabled ? .move : .cancel)
+    }
+    
+    func performDrop(info: DropInfo) -> Bool {
+        guard isEnabled, draggingTrackID != nil, isDropInsideList else {
+            cancelDrop()
+            return false
+        }
+        confirmDrop()
+        return true
     }
 }

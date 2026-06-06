@@ -203,6 +203,15 @@ final class PlayerViewModel: ObservableObject {
         updateCurrentIndex(for: playingTrackID)
     }
     
+    func restorePlaylistOrder(_ orderedIDs: [Track.ID]) {
+        let playingTrackID = currentTrack?.id
+        let order = Dictionary(uniqueKeysWithValues: orderedIDs.enumerated().map { ($0.element, $0.offset) })
+        playlist.sort { lhs, rhs in
+            (order[lhs.id] ?? Int.max) < (order[rhs.id] ?? Int.max)
+        }
+        updateCurrentIndex(for: playingTrackID)
+    }
+    
     private func updateCurrentIndex(for playingTrackID: Track.ID?) {
         guard let playingTrackID else { return }
         currentIndex = playlist.firstIndex(where: { $0.id == playingTrackID })
