@@ -27,8 +27,8 @@ open build/康纳音乐.app
 # 方法 3: Xcode（推荐）
 open 康纳音乐.xcodeproj
 # 在 Xcode 顶部选择「康纳音乐」scheme，然后点击 Run。
-# 不要用 Xcode 打开 Package.swift 运行 MusicPlayer scheme；那是 SwiftPM 裸 executable，
-# 没有标准 .app bundle，可能出现 missing main bundle identifier 相关启动问题。
+# 推荐打开 康纳音乐.xcodeproj 运行标准 .app target；
+# Package.swift 仅保留给命令行 SwiftPM 构建使用。
 ```
 
 ## 使用
