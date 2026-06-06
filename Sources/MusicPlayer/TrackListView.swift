@@ -9,7 +9,7 @@ enum PlaylistSortField: Equatable {
 
 struct TrackListView: View {
     @ObservedObject var viewModel: PlayerViewModel
-    @State private var selectedTrackID: Track.ID? = nil
+    @State private var lastInteractedTrackID: Track.ID? = nil
     @State private var sortField: PlaylistSortField = .title
     @State private var sortAscending: Bool = true
     @State private var visibleTrackFrames: [Track.ID: CGRect] = [:]
@@ -31,7 +31,7 @@ struct TrackListView: View {
             GeometryReader { listGeometry in
                 ScrollViewReader { scrollProxy in
                     ZStack(alignment: .bottomTrailing) {
-                        List(selection: $selectedTrackID) {
+                        List {
                             ForEach(visibleRows) { row in
                                 TrackRowView(
                                     track: row.track,
@@ -40,13 +40,13 @@ struct TrackListView: View {
                                     playbackState: viewModel.playbackState
                                 )
                                 .id(row.track.id)
-                                .tag(row.track.id)
                                 .contentShape(Rectangle())
                                 .background(trackVisibilityReporter(for: row.track.id))
                                 .contextMenu {
                                     contextMenu(for: row.track)
                                 }
                                 .onTapGesture(count: 2) {
+                                    lastInteractedTrackID = row.track.id
                                     viewModel.play(track: row.track)
                                 }
                             }
@@ -69,7 +69,7 @@ struct TrackListView: View {
             }
         }
         .onDeleteCommand {
-            if let id = selectedTrackID,
+            if let id = lastInteractedTrackID,
                let track = viewModel.playlist.first(where: { $0.id == id }) {
                 viewModel.removeTrack(track)
             }
@@ -177,7 +177,7 @@ struct TrackListView: View {
     private func locateCurrentTrackButton(scrollProxy: ScrollViewProxy) -> some View {
         Button {
             guard let currentTrackID = viewModel.currentTrack?.id else { return }
-            selectedTrackID = currentTrackID
+            lastInteractedTrackID = currentTrackID
             withAnimation(.easeInOut(duration: 0.25)) {
                 scrollProxy.scrollTo(currentTrackID, anchor: .center)
             }
