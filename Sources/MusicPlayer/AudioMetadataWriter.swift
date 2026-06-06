@@ -17,7 +17,7 @@ enum AudioMetadataWriterError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedFormat(let ext):
-            return "当前版本暂不支持直接写入 .\(ext) 文件的元信息。已支持 MP3、M4A、MP4、AAC。"
+            return "当前版本暂不支持直接写入 .\(ext) 文件的元信息。已支持 MP3、FLAC、M4A、MP4、AAC。"
         case .cannotReadFile(let url):
             return "无法读取文件：\(url.lastPathComponent)"
         case .exportSessionUnavailable:
@@ -30,17 +30,180 @@ enum AudioMetadataWriterError: LocalizedError {
     }
 }
 
+private struct FLACMetadataBlock {
+    let type: UInt8
+    let data: Data
+}
+
 enum AudioMetadataWriter {
     static func write(metadata: EditableTrackMetadata, to url: URL) async throws {
         let ext = url.pathExtension.lowercased()
         switch ext {
         case "mp3":
             try writeMP3(metadata: metadata, to: url)
+        case "flac":
+            try writeFLAC(metadata: metadata, to: url)
         case "m4a", "mp4", "aac":
             try await writeMPEG4(metadata: metadata, to: url)
         default:
             throw AudioMetadataWriterError.unsupportedFormat(ext.isEmpty ? "unknown" : ext)
         }
+    }
+    
+    // MARK: - FLAC / Vorbis Comment
+    
+    private static func writeFLAC(metadata: EditableTrackMetadata, to url: URL) throws {
+        guard let data = try? Data(contentsOf: url) else {
+            throw AudioMetadataWriterError.cannotReadFile(url)
+        }
+        guard data.count >= 4, data.prefix(4) == Data("fLaC".utf8) else {
+            throw AudioMetadataWriterError.cannotReadFile(url)
+        }
+        
+        var offset = 4
+        var blocks: [FLACMetadataBlock] = []
+        var foundLastBlock = false
+        
+        while offset + 4 <= data.count {
+            let header = data[offset]
+            let type = header & 0x7F
+            let length = (Int(data[offset + 1]) << 16) | (Int(data[offset + 2]) << 8) | Int(data[offset + 3])
+            let payloadStart = offset + 4
+            let payloadEnd = payloadStart + length
+            guard payloadEnd <= data.count else {
+                throw AudioMetadataWriterError.cannotReadFile(url)
+            }
+            
+            blocks.append(FLACMetadataBlock(type: type, data: Data(data[payloadStart..<payloadEnd])))
+            offset = payloadEnd
+            
+            if (header & 0x80) != 0 {
+                foundLastBlock = true
+                break
+            }
+        }
+        
+        guard foundLastBlock, !blocks.isEmpty else {
+            throw AudioMetadataWriterError.cannotReadFile(url)
+        }
+        
+        let audioData = Data(data[offset..<data.count])
+        var replacedVorbisComment = false
+        
+        blocks = blocks.map { block in
+            guard block.type == 4 else { return block }
+            replacedVorbisComment = true
+            return FLACMetadataBlock(
+                type: block.type,
+                data: updatedVorbisCommentData(block.data, metadata: metadata)
+            )
+        }
+        
+        if !replacedVorbisComment {
+            let insertionIndex = blocks.first?.type == 0 ? 1 : 0
+            blocks.insert(
+                FLACMetadataBlock(type: 4, data: newVorbisCommentData(metadata: metadata)),
+                at: insertionIndex
+            )
+        }
+        
+        var output = Data("fLaC".utf8)
+        for index in blocks.indices {
+            let block = blocks[index]
+            let isLast = index == blocks.indices.last
+            output.append((isLast ? 0x80 : 0x00) | block.type)
+            output.append(flacBlockLengthBytes(block.data.count))
+            output.append(block.data)
+        }
+        output.append(audioData)
+        
+        try output.write(to: url, options: [.atomic])
+    }
+    
+    private static func updatedVorbisCommentData(_ data: Data, metadata: EditableTrackMetadata) -> Data {
+        let parsed = parseVorbisComment(data)
+        let vendor = parsed?.vendor ?? "康纳音乐"
+        var comments = parsed?.comments ?? []
+        
+        upsertVorbisComment("TITLE", metadata.title, in: &comments)
+        upsertVorbisComment("ARTIST", metadata.artist, in: &comments)
+        upsertVorbisComment("ALBUM", metadata.album, in: &comments)
+        
+        return buildVorbisCommentData(vendor: vendor, comments: comments)
+    }
+    
+    private static func newVorbisCommentData(metadata: EditableTrackMetadata) -> Data {
+        buildVorbisCommentData(
+            vendor: "康纳音乐",
+            comments: [
+                "TITLE=\(metadata.title)",
+                "ARTIST=\(metadata.artist)",
+                "ALBUM=\(metadata.album)"
+            ]
+        )
+    }
+    
+    private static func parseVorbisComment(_ data: Data) -> (vendor: String, comments: [String])? {
+        var offset = 0
+        guard let vendorLength = readLittleEndianUInt32(data, offset: &offset),
+              offset + vendorLength <= data.count else { return nil }
+        let vendorData = Data(data[offset..<(offset + vendorLength)])
+        offset += vendorLength
+        guard let vendor = String(data: vendorData, encoding: .utf8),
+              let commentCount = readLittleEndianUInt32(data, offset: &offset) else { return nil }
+        
+        var comments: [String] = []
+        for _ in 0..<commentCount {
+            guard let length = readLittleEndianUInt32(data, offset: &offset),
+                  offset + length <= data.count else { return nil }
+            let commentData = Data(data[offset..<(offset + length)])
+            offset += length
+            if let comment = String(data: commentData, encoding: .utf8) {
+                comments.append(comment)
+            }
+        }
+        
+        return (vendor, comments)
+    }
+    
+    private static func buildVorbisCommentData(vendor: String, comments: [String]) -> Data {
+        var output = Data()
+        let vendorData = vendor.data(using: .utf8) ?? Data()
+        output.appendLittleEndianUInt32(vendorData.count)
+        output.append(vendorData)
+        output.appendLittleEndianUInt32(comments.count)
+        
+        for comment in comments {
+            let commentData = comment.data(using: .utf8) ?? Data()
+            output.appendLittleEndianUInt32(commentData.count)
+            output.append(commentData)
+        }
+        
+        return output
+    }
+    
+    private static func upsertVorbisComment(_ key: String, _ value: String, in comments: inout [String]) {
+        let prefix = "\(key)="
+        comments.removeAll { $0.range(of: prefix, options: [.caseInsensitive, .anchored]) != nil }
+        comments.append("\(key)=\(value)")
+    }
+    
+    private static func readLittleEndianUInt32(_ data: Data, offset: inout Int) -> Int? {
+        guard offset + 4 <= data.count else { return nil }
+        let value = Int(data[offset])
+            | (Int(data[offset + 1]) << 8)
+            | (Int(data[offset + 2]) << 16)
+            | (Int(data[offset + 3]) << 24)
+        offset += 4
+        return value
+    }
+    
+    private static func flacBlockLengthBytes(_ length: Int) -> Data {
+        Data([
+            UInt8((length >> 16) & 0xFF),
+            UInt8((length >> 8) & 0xFF),
+            UInt8(length & 0xFF)
+        ])
     }
     
     // MARK: - MP3 / ID3v2.3
@@ -158,5 +321,14 @@ private extension UInt32 {
     var bigEndianData: Data {
         var value = self.bigEndian
         return Data(bytes: &value, count: MemoryLayout<UInt32>.size)
+    }
+}
+
+private extension Data {
+    mutating func appendLittleEndianUInt32(_ value: Int) {
+        append(UInt8(value & 0xFF))
+        append(UInt8((value >> 8) & 0xFF))
+        append(UInt8((value >> 16) & 0xFF))
+        append(UInt8((value >> 24) & 0xFF))
     }
 }
