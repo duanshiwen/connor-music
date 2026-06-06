@@ -42,7 +42,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Be explicit when launched from Xcode's debugger so the app becomes a
         // regular foreground app and the main SwiftUI window is activated.
         NSApplication.shared.setActivationPolicy(.regular)
+        applyApplicationIcon()
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+    
+    private func applyApplicationIcon() {
+        if let icon = NSImage(named: "AppIcon") {
+            NSApplication.shared.applicationIconImage = icon
+            return
+        }
+        
+        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let icon = NSImage(contentsOf: iconURL) {
+            NSApplication.shared.applicationIconImage = icon
+        }
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
