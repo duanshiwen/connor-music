@@ -32,6 +32,7 @@ struct TrackListView: View {
                         isCurrent: row.isCurrent,
                         playbackState: viewModel.playbackState,
                         canReorder: !isFiltering,
+                        isDragging: draggingTrackID == row.track.id,
                         onBeginDrag: {
                             draggingTrackID = row.track.id
                         }
@@ -125,6 +126,7 @@ private struct TrackRowView: View {
     let isCurrent: Bool
     let playbackState: PlaybackState
     let canReorder: Bool
+    let isDragging: Bool
     let onBeginDrag: () -> Void
     
     var body: some View {
@@ -133,7 +135,7 @@ private struct TrackRowView: View {
                 isCurrent: isCurrent,
                 playbackState: playbackState,
                 canReorder: canReorder,
-                trackID: track.id,
+                track: track,
                 onBeginDrag: onBeginDrag
             )
             .frame(width: 24)
@@ -170,6 +172,8 @@ private struct TrackRowView: View {
                 .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 4)
+        .opacity(isDragging ? 0.38 : 1)
+        .animation(.easeOut(duration: 0.12), value: isDragging)
     }
 }
 
@@ -177,7 +181,7 @@ private struct DragHandleView: View {
     let isCurrent: Bool
     let playbackState: PlaybackState
     let canReorder: Bool
-    let trackID: Track.ID
+    @ObservedObject var track: Track
     let onBeginDrag: () -> Void
     
     var body: some View {
@@ -198,8 +202,44 @@ private struct DragHandleView: View {
         .onDrag {
             guard canReorder else { return NSItemProvider() }
             onBeginDrag()
-            return NSItemProvider(object: trackID.uuidString as NSString)
+            return NSItemProvider(object: track.id.uuidString as NSString)
+        } preview: {
+            TrackDragPreview(track: track)
         }
+    }
+}
+
+private struct TrackDragPreview: View {
+    @ObservedObject var track: Track
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+            ArtworkView(artwork: track.artwork, size: 32)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(track.title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                Text(track.artist)
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .frame(width: 280, alignment: .leading)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.accentColor.opacity(0.35), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 6)
+        .opacity(0.88)
     }
 }
 
