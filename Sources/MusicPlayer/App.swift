@@ -7,7 +7,7 @@ struct MusicPlayerApp: App {
     @StateObject private var viewModel = PlayerViewModel()
     
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("康纳音乐") {
             ContentView(viewModel: viewModel)
                 .frame(minWidth: 700, minHeight: 500)
                 .onAppear {

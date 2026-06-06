@@ -20,6 +20,7 @@
 		A1B2C3D4E5F6000000000026 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */; };
 		A1B2C3D4E5F6000000000028 /* TrackListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000027 /* TrackListView.swift */; };
 		A1B2C3D4E5F600000000002B /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000029 /* AppIcon.icns */; };
+		A1B2C3D4E5F600000000002D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000002C /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		A1B2C3D4E5F6000000000027 /* TrackListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackListView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000029 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		A1B2C3D4E5F600000000002A /* XcodeInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = XcodeInfo.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000002C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000003 /* 康纳音乐.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "康纳音乐.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -82,6 +84,7 @@
 		A1B2C3D4E5F6000000000006 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F600000000002C /* Assets.xcassets */,
 				A1B2C3D4E5F6000000000029 /* AppIcon.icns */,
 				A1B2C3D4E5F600000000002A /* XcodeInfo.plist */,
 			);
@@ -154,6 +157,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F600000000002D /* Assets.xcassets in Resources */,
 				A1B2C3D4E5F600000000002B /* AppIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -238,7 +242,7 @@
 		A1B2C3D4E5F600000000000D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_LANGUAGE = zh-Hans;
@@ -256,7 +260,7 @@
 		A1B2C3D4E5F600000000000E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_LANGUAGE = zh-Hans;
