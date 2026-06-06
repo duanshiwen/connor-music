@@ -2,7 +2,7 @@
 
 康纳音乐是一款本地 macOS 音乐播放器，使用 Swift + SwiftUI 原生实现。
 
-当前版本：**1.1.0**
+当前版本：**1.10.0**
 
 ## 功能
 
@@ -68,13 +68,13 @@ swift build -c release
 
 ## 打包发布
 
-当前 1.1.0 发布版使用 Xcode Release 构建。需要 DMG 时可按下面流程打包。
+当前 1.10.0 发布版使用 Xcode Release 构建。需要 DMG 时可按下面流程打包。
 
 典型流程：
 
 ```bash
 APP_NAME="康纳音乐"
-VERSION="1.1.0"
+VERSION="1.10.0"
 BUILD_DIR="build"
 DERIVED_DATA="$BUILD_DIR/DerivedData"
 DIST_DIR="$BUILD_DIR/release-$VERSION"
@@ -112,15 +112,12 @@ codesign --verify --verbose=2 "$DMG_PATH"
 hdiutil verify "$DMG_PATH"
 ```
 
-1.1.0 更新重点：
+1.10.0 更新重点：
 
 - 修复 FLAC 曲目因 `commonMetadata` 为空而显示“未知艺术家 / 未知专辑”的问题
 - 新增 FLAC 元数据写入支持，编辑标题、艺术家、专辑时不转码、不损失音质
 - 新增当前播放曲目浮动定位按钮，仅在当前曲目不在播放列表可视区域内时显示
 - 修复定位当前曲目后某一行残留系统选中高亮的问题
-
-当前开发分支更新重点：
-
 - 接入 macOS `MPNowPlayingInfoCenter`，向系统同步当前播放曲目的标题、艺术家、专辑、封面、时长、进度和播放状态
 - 接入 `MPRemoteCommandCenter`，支持系统媒体键 / 控制中心触发播放、暂停、播放暂停切换、上一曲、下一曲和播放进度跳转
 - 新增窗口级空格键播放 / 暂停；当焦点位于搜索框等文本输入控件时，空格仍作为普通输入处理
