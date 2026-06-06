@@ -188,10 +188,24 @@ final class PlayerViewModel: ObservableObject {
     func moveTrack(from source: IndexSet, to destination: Int) {
         let playingTrackID = currentTrack?.id
         playlist.move(fromOffsets: source, toOffset: destination)
-        // Update currentIndex to follow the same track after reordering.
-        if let playingTrackID {
-            currentIndex = playlist.firstIndex(where: { $0.id == playingTrackID })
-        }
+        updateCurrentIndex(for: playingTrackID)
+    }
+    
+    func moveTrack(_ movingTrackID: Track.ID, before targetTrackID: Track.ID) {
+        guard movingTrackID != targetTrackID,
+              let sourceIndex = playlist.firstIndex(where: { $0.id == movingTrackID }),
+              let targetIndex = playlist.firstIndex(where: { $0.id == targetTrackID }) else { return }
+        
+        let playingTrackID = currentTrack?.id
+        let track = playlist.remove(at: sourceIndex)
+        let adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex
+        playlist.insert(track, at: adjustedTargetIndex)
+        updateCurrentIndex(for: playingTrackID)
+    }
+    
+    private func updateCurrentIndex(for playingTrackID: Track.ID?) {
+        guard let playingTrackID else { return }
+        currentIndex = playlist.firstIndex(where: { $0.id == playingTrackID })
     }
     
     func playAllShuffle() {

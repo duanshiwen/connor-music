@@ -1,40 +1,60 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct TrackListView: View {
     @ObservedObject var viewModel: PlayerViewModel
     @State private var selectedTrackID: Track.ID? = nil
+    @State private var draggingTrackID: Track.ID? = nil
     
     private var isFiltering: Bool {
         !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    private var visibleTracks: [Track] {
-        viewModel.filteredPlaylist
+    private var visibleRows: [TrackRowData] {
+        let currentTrackID = viewModel.currentTrack?.id
+        return viewModel.filteredPlaylist.enumerated().map { index, track in
+            TrackRowData(
+                track: track,
+                index: index,
+                isCurrent: track.id == currentTrackID
+            )
+        }
     }
     
     var body: some View {
         VStack(spacing: 0) {
             header
             List(selection: $selectedTrackID) {
-                ForEach(visibleTracks) { track in
+                ForEach(visibleRows) { row in
                     TrackRowView(
-                        track: track,
-                        index: indexInVisible(track),
-                        isCurrent: isCurrentTrack(track),
-                        playbackState: viewModel.playbackState
+                        track: row.track,
+                        index: row.index,
+                        isCurrent: row.isCurrent,
+                        playbackState: viewModel.playbackState,
+                        canReorder: !isFiltering,
+                        onBeginDrag: {
+                            draggingTrackID = row.track.id
+                        }
                     )
-                    .tag(track.id)
+                    .tag(row.track.id)
                     .contentShape(Rectangle())
                     .contextMenu {
-                        contextMenu(for: track)
+                        contextMenu(for: row.track)
                     }
                     .onTapGesture(count: 2) {
-                        viewModel.play(track: track)
+                        viewModel.play(track: row.track)
                     }
-                }
-                .onMove { source, destination in
-                    guard !isFiltering else { return }
-                    viewModel.moveTrack(from: source, to: destination)
+                    .onDrop(
+                        of: [.text],
+                        delegate: TrackReorderDropDelegate(
+                            targetTrackID: row.track.id,
+                            draggingTrackID: $draggingTrackID,
+                            isEnabled: !isFiltering,
+                            move: { movingID, targetID in
+                                viewModel.moveTrack(movingID, before: targetID)
+                            }
+                        )
+                    )
                 }
             }
             .listStyle(.inset(alternatesRowBackgrounds: true))
@@ -89,14 +109,14 @@ struct TrackListView: View {
             viewModel.removeTrack(track)
         }
     }
+}
+
+private struct TrackRowData: Identifiable {
+    let track: Track
+    let index: Int
+    let isCurrent: Bool
     
-    private func indexInVisible(_ track: Track) -> Int {
-        visibleTracks.firstIndex(where: { $0.id == track.id }) ?? 0
-    }
-    
-    private func isCurrentTrack(_ track: Track) -> Bool {
-        viewModel.currentTrack?.id == track.id
-    }
+    var id: Track.ID { track.id }
 }
 
 private struct TrackRowView: View {
@@ -104,20 +124,18 @@ private struct TrackRowView: View {
     let index: Int
     let isCurrent: Bool
     let playbackState: PlaybackState
+    let canReorder: Bool
+    let onBeginDrag: () -> Void
     
     var body: some View {
         HStack(spacing: 8) {
-            Group {
-                if isCurrent {
-                    Image(systemName: playbackState == .playing ? "speaker.wave.2.fill" : "pause.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(.accentColor)
-                } else {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary.opacity(0.35))
-                }
-            }
+            DragHandleView(
+                isCurrent: isCurrent,
+                playbackState: playbackState,
+                canReorder: canReorder,
+                trackID: track.id,
+                onBeginDrag: onBeginDrag
+            )
             .frame(width: 24)
             
             Text("\(index + 1)")
@@ -152,5 +170,62 @@ private struct TrackRowView: View {
                 .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 4)
+    }
+}
+
+private struct DragHandleView: View {
+    let isCurrent: Bool
+    let playbackState: PlaybackState
+    let canReorder: Bool
+    let trackID: Track.ID
+    let onBeginDrag: () -> Void
+    
+    var body: some View {
+        Group {
+            if isCurrent {
+                Image(systemName: playbackState == .playing ? "speaker.wave.2.fill" : "pause.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(.accentColor)
+            } else {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(canReorder ? .secondary.opacity(0.55) : .secondary.opacity(0.2))
+            }
+        }
+        .frame(width: 22, height: 22)
+        .contentShape(Rectangle())
+        .help(canReorder ? "拖动此区域调整排序" : "搜索时暂不支持拖动排序")
+        .onDrag {
+            guard canReorder else { return NSItemProvider() }
+            onBeginDrag()
+            return NSItemProvider(object: trackID.uuidString as NSString)
+        }
+    }
+}
+
+private struct TrackReorderDropDelegate: DropDelegate {
+    let targetTrackID: Track.ID
+    @Binding var draggingTrackID: Track.ID?
+    let isEnabled: Bool
+    let move: (Track.ID, Track.ID) -> Void
+    
+    func validateDrop(info: DropInfo) -> Bool {
+        isEnabled && draggingTrackID != nil
+    }
+    
+    func dropEntered(info: DropInfo) {
+        guard isEnabled,
+              let draggingTrackID,
+              draggingTrackID != targetTrackID else { return }
+        move(draggingTrackID, targetTrackID)
+    }
+    
+    func performDrop(info: DropInfo) -> Bool {
+        draggingTrackID = nil
+        return isEnabled
+    }
+    
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: isEnabled ? .move : .cancel)
     }
 }
