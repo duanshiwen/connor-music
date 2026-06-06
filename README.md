@@ -24,8 +24,11 @@ swift build -c release
 # .app bundle 在 build/康纳音乐.app
 open build/康纳音乐.app
 
-# 方法 3: Xcode
-open Package.swift  # 在 Xcode 中打开并运行
+# 方法 3: Xcode（推荐）
+open 康纳音乐.xcodeproj
+# 在 Xcode 顶部选择「康纳音乐」scheme，然后点击 Run。
+# 不要用 Xcode 打开 Package.swift 运行 MusicPlayer scheme；那是 SwiftPM 裸 executable，
+# 没有标准 .app bundle，可能出现 missing main bundle identifier 相关启动问题。
 ```
 
 ## 使用
