@@ -185,29 +185,30 @@ final class PlayerViewModel: ObservableObject {
         }
     }
     
-    func moveTrack(from source: IndexSet, to destination: Int) {
+    func sortPlaylist(by field: PlaylistSortField, ascending: Bool) {
         let playingTrackID = currentTrack?.id
-        playlist.move(fromOffsets: source, toOffset: destination)
-        updateCurrentIndex(for: playingTrackID)
-    }
-    
-    func moveTrack(_ movingTrackID: Track.ID, before targetTrackID: Track.ID) {
-        guard movingTrackID != targetTrackID,
-              let sourceIndex = playlist.firstIndex(where: { $0.id == movingTrackID }),
-              let targetIndex = playlist.firstIndex(where: { $0.id == targetTrackID }) else { return }
-        
-        let playingTrackID = currentTrack?.id
-        let track = playlist.remove(at: sourceIndex)
-        let adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex
-        playlist.insert(track, at: adjustedTargetIndex)
-        updateCurrentIndex(for: playingTrackID)
-    }
-    
-    func restorePlaylistOrder(_ orderedIDs: [Track.ID]) {
-        let playingTrackID = currentTrack?.id
-        let order = Dictionary(uniqueKeysWithValues: orderedIDs.enumerated().map { ($0.element, $0.offset) })
         playlist.sort { lhs, rhs in
-            (order[lhs.id] ?? Int.max) < (order[rhs.id] ?? Int.max)
+            let result: ComparisonResult
+            switch field {
+            case .title:
+                result = lhs.title.localizedCaseInsensitiveCompare(rhs.title)
+            case .artist:
+                result = lhs.artist.localizedCaseInsensitiveCompare(rhs.artist)
+            case .album:
+                result = lhs.album.localizedCaseInsensitiveCompare(rhs.album)
+            case .duration:
+                if lhs.duration == rhs.duration {
+                    result = .orderedSame
+                } else {
+                    result = lhs.duration < rhs.duration ? .orderedAscending : .orderedDescending
+                }
+            }
+            
+            if result == .orderedSame {
+                let tieBreaker = lhs.title.localizedCaseInsensitiveCompare(rhs.title)
+                return ascending ? tieBreaker != .orderedDescending : tieBreaker == .orderedDescending
+            }
+            return ascending ? result == .orderedAscending : result == .orderedDescending
         }
         updateCurrentIndex(for: playingTrackID)
     }
