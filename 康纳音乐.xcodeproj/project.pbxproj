@@ -19,6 +19,8 @@
 		A1B2C3D4E5F6000000000024 /* NowPlayingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */; };
 		A1B2C3D4E5F6000000000026 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */; };
 		A1B2C3D4E5F6000000000028 /* TrackListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000027 /* TrackListView.swift */; };
+		A1B2C3D4E5F6000000000030 /* SystemMediaController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000002F /* SystemMediaController.swift */; };
+		A1B2C3D4E5F6000000000032 /* SpaceKeyHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000031 /* SpaceKeyHandler.swift */; };
 		A1B2C3D4E5F600000000002B /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000029 /* AppIcon.icns */; };
 		A1B2C3D4E5F600000000002D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F600000000002C /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -36,6 +38,8 @@
 		A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingBar.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000027 /* TrackListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackListView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F600000000002F /* SystemMediaController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMediaController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000031 /* SpaceKeyHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceKeyHandler.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000029 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		A1B2C3D4E5F600000000002A /* XcodeInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = XcodeInfo.plist; sourceTree = "<group>"; };
 		A1B2C3D4E5F600000000002C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -77,6 +81,8 @@
 				A1B2C3D4E5F6000000000023 /* NowPlayingBar.swift */,
 				A1B2C3D4E5F6000000000025 /* PlayerViewModel.swift */,
 				A1B2C3D4E5F6000000000027 /* TrackListView.swift */,
+				A1B2C3D4E5F600000000002F /* SystemMediaController.swift */,
+				A1B2C3D4E5F6000000000031 /* SpaceKeyHandler.swift */,
 			);
 			path = Sources/MusicPlayer;
 			sourceTree = "<group>";
@@ -181,6 +187,8 @@
 				A1B2C3D4E5F6000000000024 /* NowPlayingBar.swift in Sources */,
 				A1B2C3D4E5F6000000000026 /* PlayerViewModel.swift in Sources */,
 				A1B2C3D4E5F6000000000028 /* TrackListView.swift in Sources */,
+				A1B2C3D4E5F6000000000030 /* SystemMediaController.swift in Sources */,
+				A1B2C3D4E5F6000000000032 /* SpaceKeyHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

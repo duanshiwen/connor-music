@@ -5,11 +5,12 @@ import AppKit
 struct MusicPlayerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var viewModel = PlayerViewModel()
-    
+
     var body: some Scene {
         WindowGroup("康纳音乐") {
             ContentView(viewModel: viewModel)
                 .frame(minWidth: 700, minHeight: 500)
+                .background(SpaceKeyHandler { viewModel.togglePlayPause() })
                 .onAppear {
                     setupAppearance()
                 }
@@ -20,7 +21,7 @@ struct MusicPlayerApp: App {
             CommandGroup(replacing: .newItem) { }
         }
     }
-    
+
     private func setupAppearance() {
         // Window appearance setup
         if let window = NSApplication.shared.windows.first {
@@ -38,7 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.setActivationPolicy(.regular)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
-    
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
     }

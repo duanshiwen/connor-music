@@ -185,10 +185,14 @@ struct TrackListView: View {
             Label("定位当前", systemImage: "scope")
                 .labelStyle(.iconOnly)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(.secondary)
                 .frame(width: 34, height: 34)
-                .background(.tint, in: Circle())
-                .shadow(color: .black.opacity(0.22), radius: 8, x: 0, y: 3)
+                .background(.regularMaterial, in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(Color(nsColor: .separatorColor).opacity(0.55), lineWidth: 0.8)
+                }
+                .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .help("定位到当前播放曲目")
